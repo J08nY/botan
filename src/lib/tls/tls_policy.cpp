@@ -153,6 +153,9 @@ std::string Policy::choose_curve(const std::vector<std::string>& curve_names) co
 */
 std::string Policy::choose_dh_group(const std::vector<std::string>& dh_groups) const
    {
+   if(dh_groups.empty())
+      return dh_group();
+
    const std::vector<std::string> our_groups = allowed_groups();
 
    for(size_t i = 0; i != our_groups.size(); ++i)
@@ -372,7 +375,7 @@ class Ciphersuite_Preference_Ordering final
 
       bool operator()(const Ciphersuite& a, const Ciphersuite& b) const
          {
-         if(a.kex_algo() != b.kex_algo())
+         if(a.kex_method() != b.kex_method())
             {
             for(size_t i = 0; i != m_kex.size(); ++i)
                {
@@ -402,7 +405,7 @@ class Ciphersuite_Preference_Ordering final
                return true;
             }
 
-         if(a.sig_algo() != b.sig_algo())
+         if(a.auth_method() != b.auth_method())
             {
             for(size_t i = 0; i != m_sigs.size(); ++i)
                {
@@ -453,7 +456,7 @@ std::vector<uint16_t> Policy::ciphersuite_list(Protocol_Version version,
          continue;
 
       // Are we doing SRP?
-      if(!have_srp && suite.kex_algo() == "SRP_SHA")
+      if(!have_srp && suite.kex_method() == Kex_Algo::SRP_SHA)
          continue;
 
       if(!version.supports_aead_modes())
@@ -479,7 +482,7 @@ std::vector<uint16_t> Policy::ciphersuite_list(Protocol_Version version,
       if(!value_exists(sigs, suite.sig_algo()))
          {
          // allow if it's an empty sig algo and we want to use PSK
-         if(suite.sig_algo() != "" || !suite.psk_ciphersuite())
+         if(suite.auth_method() != Sig_Algo::IMPLICIT || !suite.psk_ciphersuite())
             continue;
          }
 
@@ -488,7 +491,7 @@ std::vector<uint16_t> Policy::ciphersuite_list(Protocol_Version version,
       removal of x25519 from the ECC curve list as equivalent to
       saying they do not trust CECPQ1
       */
-      if(suite.kex_algo() == "CECPQ1" && allowed_ecc_curve("x25519") == false)
+      if(suite.kex_method() == Kex_Algo::CECPQ1 && allowed_ecc_curve("x25519") == false)
          continue;
 
       // OK, consider it

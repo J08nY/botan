@@ -421,13 +421,16 @@ Supported_Groups::Supported_Groups(TLS_Data_Reader& reader,
 
    for(size_t i = 0; i != len; ++i)
       {
+      const Group_Params group_id = static_cast<Group_Params>(reader.get_uint16_t());
       const uint16_t id = reader.get_uint16_t();
-      const std::string name = curve_id_to_name(id);
+
+      const bool is_dh = (id >= 256 && id <= 511);
+      const std::string name = group_param_to_string(id);
 
       if(!name.empty())
          {
          m_groups.push_back(name);
-         if(is_dh_group(name))
+         if(is_dh)
             {
             m_dh_groups.push_back(name);
             }

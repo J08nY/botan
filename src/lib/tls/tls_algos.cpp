@@ -11,15 +11,113 @@ namespace Botan {
 
 namespace TLS {
 
+std::string cipher_algo_aead_name(Cipher_Algo cipher)
+   {
+   switch(cipher)
+      {
+      case Cipher_Algo::CHACHA20_POLY1305:
+         return "ChaCha20Poly1305";
+      case Cipher_Algo::AES_128_GCM:
+         return "AES-128/GCM";
+      case Cipher_Algo::AES_256_GCM:
+         return "AES-256/GCM";
+      case Cipher_Algo::ARIA_128_GCM:
+         return "ARIA-128/GCM";
+      case Cipher_Algo::ARIA_256_GCM:
+         return "ARIA-256/GCM";
+      case Cipher_Algo::CAMELLIA_128_GCM:
+         return "Camellia-128/GCM";
+      case Cipher_Algo::CAMELLIA_256_GCM:
+         return "Camellia-256/GCM";
+      case Cipher_Algo::AES_128_CCM:
+      case Cipher_Algo::AES_256_CCM:
+      case Cipher_Algo::AES_128_CCM8:
+      case Cipher_Algo::AES_256_CCM8:
+      case Cipher_Algo::AES_128_OCB:
+      case Cipher_Algo::AES_256_OCB:
+
+      case Cipher_Algo::AES_128_CBC_HMAC_SHA1:
+         return "TLS_CBC_HMAC(AES-128,SHA-1)";
+      case Cipher_Algo::AES_256_CBC_HMAC_SHA1:
+         return "TLS_CBC_HMAC(AES-256,SHA-1)";
+      case Cipher_Algo::CAMELLIA_128_CBC_HMAC_SHA1:
+         return "TLS_CBC_HMAC(AES-256,SHA-1)";
+      case Cipher_Algo::CAMELLIA_256_CBC_HMAC_SHA1:
+      case Cipher_Algo::DES_EDE_CBC_HMAC_SHA1:
+      case Cipher_Algo::SEED_CBC_HMAC_SHA1:
+
+      case Cipher_Algo::AES_128_CBC_HMAC_SHA256:
+      case Cipher_Algo::AES_256_CBC_HMAC_SHA256:
+      case Cipher_Algo::CAMELLIA_128_CBC_HMAC_SHA256:
+      case Cipher_Algo::CAMELLIA_256_CBC_HMAC_SHA256:
+
+      case Cipher_Algo::AES_256_CBC_HMAC_SHA384:
+      case Cipher_Algo::CAMELLIA_256_CBC_HMAC_SHA384:
+      }
+
+   throw Invalid_State("Invalid Cipher_Algo enum");
+   }
+
+size_t cipher_algo_key_size(Cipher_Algo cipher)
+   {
+   return 0;
+   }
+
+size_t cipher_algo_mac_key_size(Cipher_Algo cipher)
+   {
+   return 0;
+   }
+
+std::string cipher_algo_mac_type(Cipher_Algo cipher)
+   {
+   switch(cipher)
+      {
+      case Cipher_Algo::CHACHA20_POLY1305:
+      case Cipher_Algo::AES_128_GCM:
+      case Cipher_Algo::AES_256_GCM:
+      case Cipher_Algo::ARIA_128_GCM:
+      case Cipher_Algo::ARIA_256_GCM:
+      case Cipher_Algo::CAMELLIA_128_GCM:
+      case Cipher_Algo::CAMELLIA_256_GCM:
+      case Cipher_Algo::AES_128_CCM:
+      case Cipher_Algo::AES_256_CCM:
+      case Cipher_Algo::AES_128_CCM8:
+      case Cipher_Algo::AES_256_CCM8:
+      case Cipher_Algo::AES_128_OCB:
+      case Cipher_Algo::AES_256_OCB:
+         return "AEAD";
+
+      case Cipher_Algo::AES_128_CBC_HMAC_SHA1:
+      case Cipher_Algo::AES_256_CBC_HMAC_SHA1:
+      case Cipher_Algo::CAMELLIA_128_CBC_HMAC_SHA1:
+      case Cipher_Algo::CAMELLIA_256_CBC_HMAC_SHA1:
+      case Cipher_Algo::DES_EDE_CBC_HMAC_SHA1:
+      case Cipher_Algo::SEED_CBC_HMAC_SHA1:
+         return "HMAC(SHA-1)";
+
+      case Cipher_Algo::AES_128_CBC_HMAC_SHA256:
+      case Cipher_Algo::AES_256_CBC_HMAC_SHA256:
+      case Cipher_Algo::CAMELLIA_128_CBC_HMAC_SHA256:
+      case Cipher_Algo::CAMELLIA_256_CBC_HMAC_SHA256:
+         return "HMAC(SHA-256)";
+
+      case Cipher_Algo::AES_256_CBC_HMAC_SHA384:
+      case Cipher_Algo::CAMELLIA_256_CBC_HMAC_SHA384:
+         return "HMAC(SHA-384)";
+      }
+
+   throw Invalid_State("Invalid Cipher_Algo enum");
+   }
+
 std::string kdf_algo_to_string(KDF_Algo algo)
    {
    switch(algo)
       {
-      case KDF_Algo::SHA_1:
+      case KDF_Algo::SHA1:
          return "SHA-1";
-      case KDF_Algo::SHA_256:
+      case KDF_Algo::SHA256:
          return "SHA-256";
-      case KDF_Algo::SHA_384:
+      case KDF_Algo::SHA384:
          return "SHA-384";
       }
 

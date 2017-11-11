@@ -1,6 +1,6 @@
 /*
 * TLS Record Handling
-* (C) 2012,2013,2014,2015,2016 Jack Lloyd
+* (C) 2012,2013,2014,2015,2016,2017 Jack Lloyd
 *     2016 Juraj Somorovsky
 *     2016 Matthias Gierlings
 *

@@ -16,7 +16,10 @@ import optparse
 
 def to_ciphersuite_info(code, name):
 
-    (sig_and_kex,cipher_and_mac) = name.split('_WITH_')
+    if(name.endswith('CCM') or name.endswith('CCM_8')):
+       name += '_SHA256'
+
+    (sig_and_kex,cipher_and_mac) = name.replace('CCM_8', 'CCM8').split('_WITH_')
 
     if sig_and_kex == 'RSA':
         sig_algo = 'IMPLICIT'
@@ -35,116 +38,47 @@ def to_ciphersuite_info(code, name):
     else:
         (kex_algo, sig_algo) = sig_and_kex.split('_')
 
-    cipher_and_mac = cipher_and_mac.split('_')
-
-    mac_algo = cipher_and_mac[-1]
-
-    cipher = cipher_and_mac[:-1]
-
-    if mac_algo == '8' and cipher[-1] == 'CCM':
-        cipher = cipher[:-1]
-        mac_algo = 'CCM_8'
-    elif cipher[-2] == 'CCM' and cipher[-1] == '8':
-        cipher = cipher[:-1]
-        mac_algo = 'CCM_8'
-
-    if mac_algo == 'CCM':
-        cipher += ['CCM']
-        mac_algo = 'SHA256'
-    elif mac_algo == 'CCM_8':
-        cipher += ['CCM(8)']
-        mac_algo = 'SHA256'
-
-    cipher_info = {
-        'CHACHA20': ('ChaCha',32),
-        'IDEA': ('IDEA',16),
-        'DES': ('DES',8),
-        '3DES': ('3DES',24),
-        'CAMELLIA': ('Camellia',None),
-        'AES': ('AES',None),
-        'SEED': ('SEED',16),
-        'ARIA': ('ARIA',None),
-        }
-
-    tls_to_botan_names = {
-        'IMPLICIT': 'IMPLICIT',
-
+    sig_algo_fixups = {
         'anon': 'ANONYMOUS',
-        'MD5': 'MD5',
-        'SHA': 'SHA-1',
-        'SHA256': 'SHA-256',
-        'SHA384': 'SHA-384',
-        'SHA512': 'SHA-512',
+        'DSS': 'DSA'
+        }
 
-        'CHACHA': 'ChaCha',
-        '3DES': 'TripleDES',
+    if sig_algo in sig_algo_fixups:
+        sig_algo = sig_algo_fixups[sig_algo]
 
-        'DSS': 'DSA',
-        'ECDSA': 'ECDSA',
-        'RSA': 'RSA',
-        'SRP_SHA': 'SRP_SHA',
+    kex_algo_fixups = {
         'DHE': 'DH',
-        'DH': 'DH',
         'ECDHE': 'ECDH',
-        'ECDH': 'ECDH',
-        '': '',
-        'PSK': 'PSK',
-        'DHE_PSK': 'DHE_PSK',
         'PSK_DHE': 'DHE_PSK',
-        'ECDHE_PSK': 'ECDHE_PSK',
-        'CECPQ1': 'CECPQ1',
-        'CECPQ1_PSK': 'CECPQ1_PSK',
+        'RSA': 'STATIC_RSA',
         }
 
-    mac_keylen = {
-        'MD5': 16,
-        'SHA-1': 20,
-        'SHA-256': 32,
-        'SHA-384': 48,
-        'SHA-512': 64,
-        }
+    if kex_algo in kex_algo_fixups:
+        kex_algo = kex_algo_fixups[kex_algo]
 
-    mac_algo = tls_to_botan_names[mac_algo]
-    sig_algo = tls_to_botan_names[sig_algo]
-    kex_algo = tls_to_botan_names[kex_algo]
-    if kex_algo == 'RSA':
-        kex_algo = 'STATIC_RSA'
+    cipher_and_mac = cipher_and_mac.split('_')
+    cipher_algo = '_'.join(cipher_and_mac[:-1])
+    prf_algo = cipher_and_mac[-1]
+    mode = cipher_and_mac[-2]
 
-    (cipher_algo, cipher_keylen) = cipher_info[cipher[0]]
+    cipher_algo = cipher_algo.replace('3DES_EDE', 'DES_EDE')
 
-    if cipher_keylen is None:
-        cipher_keylen = int(cipher[1]) / 8
+    if prf_algo == 'SHA':
+        prf_algo = 'SHA1'
 
-    if cipher_algo in ['AES', 'Camellia', 'ARIA']:
-        cipher_algo += '-%d' % (cipher_keylen*8)
+    if cipher_algo == 'CHACHA20_POLY1305':
+        return (name, sig_algo, kex_algo, "CHACHA20_POLY1305", prf_algo, 'AEAD_XOR_12')
 
-    modestr = ''
-    mode = ''
-
-    if cipher[0] == 'CHACHA20' and cipher[1] == 'POLY1305':
-        return (name, code, sig_algo, kex_algo, "ChaCha20Poly1305", cipher_keylen, "AEAD", 0, mac_algo, 'AEAD_XOR_12')
-
-    mode = cipher[-1]
-    if mode not in ['CBC', 'GCM', 'CCM(8)', 'CCM', 'OCB']:
-        print "#warning Unknown mode '%s' for ciphersuite %s (0x%d)" % (' '.join(cipher), name, code)
-
-    if mode != 'CBC':
-        if mode == 'OCB':
-            cipher_algo += '/OCB(12)'
-        else:
-            cipher_algo += '/' + mode
+    if mode not in ['CBC', 'GCM', 'CCM8', 'CCM', 'OCB']:
+        print("Unknown mode '%s' for ciphersuite %s (0x%d)" % (mode, name, int(code, 16)))
+        sys.exit(1)
 
     if mode == 'CBC':
-        return (name, code, sig_algo, kex_algo, cipher_algo, cipher_keylen, mac_algo, mac_keylen[mac_algo], mac_algo, 'CBC_MODE')
-
+        return (name, sig_algo, kex_algo, cipher_algo + '_HMAC_' + prf_algo, prf_algo, 'CBC_MODE')
     elif mode == 'OCB':
-        return (name, code, sig_algo, kex_algo, cipher_algo, cipher_keylen, "AEAD", 0, mac_algo, 'AEAD_XOR_12')
-
+        return (name, sig_algo, kex_algo, cipher_algo, prf_algo, 'AEAD_XOR_12')
     else:
-        iv_bytes_from_hs = 4
-        iv_bytes_from_rec = 8
-
-        return (name, code, sig_algo, kex_algo, cipher_algo, cipher_keylen, "AEAD", 0, mac_algo, 'AEAD_IMPLICIT_4')
+        return (name, sig_algo, kex_algo, cipher_algo, prf_algo, 'AEAD_IMPLICIT_4')
 
 def open_input(args):
     iana_url = 'https://www.iana.org/assignments/tls-parameters/tls-parameters.txt'
@@ -200,7 +134,7 @@ def main(args = None):
     if args is None:
         args = sys.argv
 
-    weak_crypto = ['EXPORT', 'RC2', 'IDEA', 'RC4', '_DES_', 'WITH_NULL']
+    weak_crypto = ['EXPORT', 'MD5', 'RC2', 'IDEA', 'RC4', '_DES_', 'WITH_NULL']
     static_dh = ['ECDH_ECDSA', 'ECDH_RSA', 'DH_DSS', 'DH_RSA'] # not supported
     protocol_goop = ['SCSV', 'KRB5']
     maybe_someday = ['RSA_PSK']
@@ -319,12 +253,15 @@ const std::vector<Ciphersuite>& Ciphersuite::all_known_ciphersuites()
 
     for code in sorted(suites.keys()):
         info = suites[code]
-        assert len(info) == 10
-        suite_expr = 'Ciphersuite(0x%s, "%s", Auth_Method::%s, Kex_Algo::%s, "%s", %d, "%s", %d, KDF_Algo::%s, Nonce_Format::%s)' % (
-            code, info[0], info[2], info[3], info[4], info[5], info[6], info[7], info[8].replace('-','_'), info[9])
+
+        if info is None:
+            continue
+
+        assert len(info) == 6
+        suite_expr = 'Ciphersuite(0x%s, "%s", Auth_Method::%s, Kex_Algo::%s, Cipher_Algo::%s, KDF_Algo::%s, Nonce_Format::%s)' % (
+            code, info[0], info[1], info[2], info[3], info[4], info[5])
 
         suite_info += "      " + suite_expr + ",\n"
-        
 
     suite_info += """      };
 

@@ -1,6 +1,6 @@
 /*
 * TLS Cipher Suites
-* (C) 2004-2011,2012 Jack Lloyd
+* (C) 2004-2011,2012,2017 Jack Lloyd
 *
 * Botan is released under the Simplified BSD License (see license.txt)
 */
@@ -87,12 +87,12 @@ class BOTAN_PUBLIC_API(2,0) Ciphersuite final
       /**
       * @return symmetric cipher algorithm used by this ciphersuite
       */
-      std::string cipher_algo() const { return m_cipher_algo; }
+      //std::string cipher_algo() const { return m_cipher_algo; }
 
       /**
       * @return message authentication algorithm used by this ciphersuite
       */
-      std::string mac_algo() const { return m_mac_algo; }
+      //std::string mac_algo() const { return m_mac_algo; }
 
       std::string prf_algo() const
          {
@@ -102,13 +102,12 @@ class BOTAN_PUBLIC_API(2,0) Ciphersuite final
       /**
       * @return cipher key length used by this ciphersuite
       */
-      size_t cipher_keylen() const { return m_cipher_keylen; }
+      //size_t cipher_keylen() const { return m_cipher_keylen; }
+      //size_t mac_keylen() const { return m_mac_keylen; }
 
       size_t nonce_bytes_from_handshake() const;
 
       Nonce_Format nonce_format() const { return m_nonce_format; }
-
-      size_t mac_keylen() const { return m_mac_keylen; }
 
       /**
       * @return true if this is a valid/known ciphersuite
@@ -128,10 +127,7 @@ class BOTAN_PUBLIC_API(2,0) Ciphersuite final
                   const char* iana_id,
                   Auth_Method auth_method,
                   Kex_Algo kex_algo,
-                  const char* cipher_algo,
-                  size_t cipher_keylen,
-                  const char* mac_algo,
-                  size_t mac_keylen,
+                  Cipher_Algo cipher_algo,
                   KDF_Algo prf_algo,
                   Nonce_Format nonce_format) :
          m_ciphersuite_code(ciphersuite_code),
@@ -140,10 +136,7 @@ class BOTAN_PUBLIC_API(2,0) Ciphersuite final
          m_kex_algo(kex_algo),
          m_prf_algo(prf_algo),
          m_nonce_format(nonce_format),
-         m_cipher_algo(cipher_algo),
-         m_mac_algo(mac_algo),
-         m_cipher_keylen(cipher_keylen),
-         m_mac_keylen(mac_keylen)
+         m_cipher_algo(cipher_algo)
          {
          m_usable = is_usable();
          }
@@ -156,16 +149,11 @@ class BOTAN_PUBLIC_API(2,0) Ciphersuite final
       */
       const char* m_iana_id = nullptr;
 
-      Auth_Method m_auth_method = Auth_Method::ANONYMOUS;
+      Auth_Method m_auth_method = Auth_Method::RSA;
       Kex_Algo m_kex_algo = Kex_Algo::STATIC_RSA;
-      KDF_Algo m_prf_algo = KDF_Algo::SHA_1;
+      KDF_Algo m_prf_algo = KDF_Algo::SHA1;
       Nonce_Format m_nonce_format = Nonce_Format::CBC_MODE;
-
-      const char* m_cipher_algo = nullptr;
-      const char* m_mac_algo = nullptr;
-
-      size_t m_cipher_keylen = 0;
-      size_t m_mac_keylen = 0;
+      Cipher_Algo m_cipher_algo = Cipher_Algo::CHACHA20_POLY1305;
 
       bool m_usable = false;
    };

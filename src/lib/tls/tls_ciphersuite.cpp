@@ -22,7 +22,7 @@ size_t Ciphersuite::nonce_bytes_from_handshake() const
       {
       case Nonce_Format::CBC_MODE:
          {
-         if(cipher_algo() == "3DES")
+         if(m_cipher_algo == Cipher_Algo::DES_EDE_CBC_HMAC_SHA1)
             return 8;
          else
             return 16;
@@ -97,9 +97,6 @@ bool have_cipher(const std::string& cipher)
 
 bool Ciphersuite::is_usable() const
    {
-   if(!m_cipher_keylen) // uninitialized object
-      return false;
-
    if(!have_hash(prf_algo()))
       return false;
 

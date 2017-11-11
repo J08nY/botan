@@ -15,44 +15,57 @@ namespace Botan {
 
 namespace TLS {
 
-enum class Cipher_Algo {
+/*
+* This doesn't match any wire encoding, instead it
+* encapsulates information about the cipher.
+*
+* Low
+*/
+
+enum class Cipher_Algo : uint32_t {
    CHACHA20_POLY1305,
 
-   AES_128_CBC_HMAC_SHA1 = 100,
-   AES_128_CBC_HMAC_SHA256,
-   AES_128_CCM,
-   AES_128_CCM_8,
    AES_128_GCM,
-   AES_128_OCB,
-
-   AES_256_CBC_HMAC_SHA1 = 200,
-   AES_256_CBC_HMAC_SHA256,
-   AES_256_CBC_HMAC_SHA384,
-   AES_256_CCM,
-   AES_256_CCM_8,
    AES_256_GCM,
-   AES_256_OCB,
-
-   CAMELLIA_128_CBC_HMAC_SHA1 = 300,
-   CAMELLIA_128_CBC_HMAC_SHA256,
+   ARIA_128_GCM,
+   ARIA_256_GCM,
    CAMELLIA_128_GCM,
-
-   CAMELLIA_256_CBC_HMAC_SHA1 = 400,
-   CAMELLIA_256_CBC_HMAC_SHA256,
-   CAMELLIA_256_CBC_HMAC_SHA384,
    CAMELLIA_256_GCM,
 
-   ARIA_128_GCM = 500,
-   ARIA_256_GCM,
+   AES_128_CCM,
+   AES_256_CCM,
+   AES_128_CCM8,
+   AES_256_CCM8,
 
-   DES_EDE_CBC_HMAC_SHA1 = 1000,
+   AES_128_OCB,
+   AES_256_OCB,
+
+   AES_128_CBC_HMAC_SHA1,
+   AES_256_CBC_HMAC_SHA1,
+   CAMELLIA_128_CBC_HMAC_SHA1,
+   CAMELLIA_256_CBC_HMAC_SHA1,
+   DES_EDE_CBC_HMAC_SHA1,
    SEED_CBC_HMAC_SHA1,
+
+   AES_128_CBC_HMAC_SHA256,
+   AES_256_CBC_HMAC_SHA256,
+   CAMELLIA_128_CBC_HMAC_SHA256,
+   CAMELLIA_256_CBC_HMAC_SHA256,
+
+   AES_256_CBC_HMAC_SHA384,
+   CAMELLIA_256_CBC_HMAC_SHA384,
 };
 
+std::string cipher_algo_aead_name(Cipher_Algo cipher);
+std::string cipher_algo_mac_type(Cipher_Algo cipher);
+
+size_t cipher_algo_key_size(Cipher_Algo cipher);
+size_t cipher_algo_mac_key_size(Cipher_Algo cipher);
+
 enum class KDF_Algo {
-   SHA_1,
-   SHA_256,
-   SHA_384,
+   SHA1,
+   SHA256,
+   SHA384,
 };
 
 std::string BOTAN_DLL kdf_algo_to_string(KDF_Algo algo);

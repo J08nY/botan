@@ -2,13 +2,11 @@ language: cpp
 
 os:
   - linux
-  - osx
 
 dist: trusty
 sudo: required
 
 compiler:
-  - clang
   - gcc
 
 env:
@@ -19,21 +17,6 @@ env:
 
   matrix:
     - BUILD_MODE="shared"
-    - BUILD_MODE="fuzzers"
-    - BUILD_MODE="coverage"
-    - BUILD_MODE="cross-ppc32"
-    - BUILD_MODE="cross-ppc64"
-    - BUILD_MODE="cross-arm32"
-    - BUILD_MODE="cross-arm64"
-    - BUILD_MODE="cross-win32"
-    - BUILD_MODE="valgrind"
-    - BUILD_MODE="sonar"
-    - BUILD_MODE="static"
-    - BUILD_MODE="mini-shared"
-    - BUILD_MODE="bsi"
-    - BUILD_MODE="nist"
-    - BUILD_MODE="docs"
-    - BUILD_MODE="lint"
 
 matrix:
   exclude:
